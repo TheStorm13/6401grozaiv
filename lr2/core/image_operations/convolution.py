@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
 
-from lr1.core.entity.image import Image
-from lr1.utils.performance_measurer import PerformanceMeasurer
+from lr2.core.entity.image_cat import ImageCat
+from lr2.utils.performance_measurer import PerformanceMeasurer
 
 
 class Convolution:
@@ -12,7 +12,7 @@ class Convolution:
         self.kernel = kernel.astype(float)
 
     @PerformanceMeasurer.measure_time_decorator
-    def convolution(self, image: Image) -> Image:
+    def convolution(self, image: ImageCat) -> ImageCat:
         """Применяет свёртку к изображению (grayscale или RGB)."""
         data = image.data
         kh, kw = self.kernel.shape
@@ -39,18 +39,22 @@ class Convolution:
 
         out = np.clip(out, 0, 255).astype(np.uint8)
 
-        return Image(
+        return ImageCat(
             filename=image.filename + "_conv",
             extension=image.extension,
-            data=out
+            data=out,
+            url=image.url,
+            breeds=image.breeds
         )
 
     @PerformanceMeasurer.measure_time_decorator
-    def convolution_cv2(self, image: Image) -> Image:
+    def convolution_cv2(self, image: ImageCat) -> ImageCat:
         out = cv2.filter2D(image.data, -1, self.kernel)
 
-        return Image(
+        return ImageCat(
             filename=image.filename + "_conv_cv2",
             extension=image.extension,
-            data=out
+            data=out,
+            url=image.url,
+            breeds=image.breeds
         )

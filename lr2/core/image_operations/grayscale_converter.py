@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
 
-from lr1.core.entity.image import Image
-from lr1.utils.performance_measurer import PerformanceMeasurer
+from lr2.core.entity.image_cat import ImageCat
+from lr2.utils.performance_measurer import PerformanceMeasurer
 
 
 class GrayscaleConverter:
@@ -12,7 +12,7 @@ class GrayscaleConverter:
 
     @PerformanceMeasurer.measure_time_decorator
     @staticmethod
-    def to_grayscale(image: Image) -> Image:
+    def to_grayscale(image: ImageCat) -> ImageCat:
         data = image.data
 
         if data.ndim == 2:  # уже grayscale
@@ -27,21 +27,25 @@ class GrayscaleConverter:
         else:
             raise ValueError("Изображение должно быть RGB или grayscale")
 
-        return Image(
+        return ImageCat(
             filename=image.filename + "_gray",
             extension=image.extension,
-            data=gray_data
+            data=gray_data,
+            url=image.url,
+            breeds=image.breeds
         )
 
     @PerformanceMeasurer.measure_time_decorator
     @staticmethod
-    def to_grayscale_cv2(image: Image) -> Image:
+    def to_grayscale_cv2(image: ImageCat) -> ImageCat:
         data = image.data
 
         gray_data = cv2.cvtColor(data, cv2.COLOR_RGB2GRAY)
 
-        return Image(
+        return ImageCat(
             filename=image.filename + "_gray_cv2",
             extension=image.extension,
-            data=gray_data
+            data=gray_data,
+            url=image.url,
+            breeds=image.breeds
         )

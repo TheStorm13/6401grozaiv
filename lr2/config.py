@@ -13,3 +13,7 @@ IMAGE_EXTENSIONS: Final[list[str]] = [".jpg", ".jpeg", ".png"]
 
 # Создаем директорию для логов, если она не существует
 LOG_DIR.mkdir(exist_ok=True)
+PHOTO_DIR.mkdir(exist_ok=True)
+
+# Ключ API для внешнего сервиса
+API_KEY = "live_Pqi8F98HJlWQtYZ55C3X93u87ZO6cTlXz6o00zQOUcbOMPkUNr5t3ImzRs88LFca"

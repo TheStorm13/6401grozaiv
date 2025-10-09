@@ -1,10 +1,10 @@
 import cv2
 import numpy as np
 
-from lr1.core.entity.image import Image
-from lr1.core.image_operations.convolution import Convolution
-from lr1.core.image_operations.grayscale_converter import GrayscaleConverter
-from lr1.utils.performance_measurer import PerformanceMeasurer
+from lr2.core.entity.image_cat import ImageCat
+from lr2.core.image_operations.convolution import Convolution
+from lr2.core.image_operations.grayscale_converter import GrayscaleConverter
+from lr2.utils.performance_measurer import PerformanceMeasurer
 
 
 class EdgeDetection:
@@ -24,7 +24,7 @@ class EdgeDetection:
         self.conv_y = Convolution(EdgeDetection.SOBEL_Y)
 
     @PerformanceMeasurer.measure_time_decorator
-    def edge_detection(self, image: Image) -> Image:
+    def edge_detection(self, image: ImageCat) -> ImageCat:
         """Применяет оператор Собеля к изображению."""
 
         data = image.data
@@ -34,7 +34,11 @@ class EdgeDetection:
             data = gray_img.data
 
         # Создаем временный Image
-        temp_im = Image(filename=image.filename, extension=image.extension, data=data)
+        temp_im = ImageCat(filename=image.filename,
+                           extension=image.extension,
+                           data=data,
+                           url=image.url,
+                           breeds=image.breeds)
 
         gx_image = self.conv_x.convolution(temp_im)
         gy_image = self.conv_y.convolution(temp_im)
@@ -51,22 +55,26 @@ class EdgeDetection:
             normalized = (magnitude / max_val) * 255.0
             normalized = np.clip(normalized, 0, 255).astype(np.uint8)
 
-        return Image(
+        return ImageCat(
             filename=image.filename + "_edge",
             extension=image.extension,
-            data=normalized
+            data=normalized,
+            url=image.url,
+            breeds=image.breeds
         )
 
     @PerformanceMeasurer.measure_time_decorator
-    def edge_detection_cv2(self, image: Image) -> Image:
+    def edge_detection_cv2(self, image: ImageCat) -> ImageCat:
         """Применяет оператор Собеля к изображению."""
 
         gray = GrayscaleConverter.to_grayscale_cv2(image).data
         edges = cv2.Canny(gray, 100, 200)
         out = edges
 
-        return Image(
+        return ImageCat(
             filename=image.filename + "_edge_cv2",
             extension=image.extension,
-            data=out
+            data=out,
+            url=image.url,
+            breeds=image.breeds
         )
