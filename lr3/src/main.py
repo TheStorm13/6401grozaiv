@@ -15,10 +15,10 @@ def main(filename):
 
     # Задача 2: Разброс оценок по издателям
     chunks = StorageManager.read_csv_file_chunks(filename)
-    review_chunks = SecondPipelines.extract_review_scores(chunks)
-    review_stats = SecondPipelines.calculate_review_stats(review_chunks)
-    publisher_data = next(review_stats)
-    SecondPipelines.plot_publisher_variance(publisher_data)
+    clean_chunks = SecondPipelines.extract_review_scores(chunks)
+    stats = SecondPipelines.calculate_publisher_std(clean_chunks)
+    stats_data= next(stats)
+    SecondPipelines.plot_publisher_variance(stats_data)
 
     # Задача 3: Количество игр по рейтингам и годам
     chunks = StorageManager.read_csv_file_chunks(filename)

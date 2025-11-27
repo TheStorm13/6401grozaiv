@@ -1,11 +1,13 @@
 from collections import defaultdict
+from typing import Dict, Generator
 
 import matplotlib.pyplot as plt
+import pandas as pd
 
 
 class ThirdPipelines:
     @staticmethod
-    def extract_rating_data(chunks):
+    def extract_rating_data(chunks: Generator[pd.DataFrame]) -> Generator[pd.DataFrame]:
         """Извлечение данных о годе выпуска и рейтинге"""
         for chunk in chunks:
             # Фильтруем только нужные рейтинги
@@ -15,7 +17,7 @@ class ThirdPipelines:
             yield filtered_chunk
 
     @staticmethod
-    def count_games_by_rating_year(chunks):
+    def count_games_by_rating_year(chunks: Generator[pd.DataFrame]) -> Generator[Dict[int, Dict[str, int]]]:
         """Подсчет количества игр по рейтингам и годам"""
         rating_year_count = defaultdict(lambda: defaultdict(int))
 
@@ -31,8 +33,8 @@ class ThirdPipelines:
         yield result
 
     @staticmethod
-    def plot_rating_trends(rating_data):
-        """Визуализация трендов по рейтингам"""
+    def plot_rating_trends(rating_data: Dict[int, Dict[str, int]]) -> None:
+        """Визуализация трендов по рейтингам."""
         # Собираем данные в удобный формат
         years = sorted(rating_data.keys())
         ratings = ['E', 'T', 'M']

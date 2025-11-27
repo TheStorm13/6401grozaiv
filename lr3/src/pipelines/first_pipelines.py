@@ -1,14 +1,15 @@
 from collections import defaultdict
-from typing import Iterator, Dict, Any, List
-import pandas as pd
+from typing import Dict, Generator
+
 import matplotlib.pyplot as plt
+import pandas as pd
 
 
 class FirstPipelines:
     @staticmethod
     def extract_sales_data(
-        chunks: Iterator[pd.DataFrame],
-    ) -> Iterator[pd.DataFrame]:
+            chunks: Generator[pd.DataFrame],
+    ) -> Generator[pd.DataFrame]:
         """Извлечение данных о продажах и годе выпуска"""
 
         for chunk in chunks:
@@ -18,8 +19,8 @@ class FirstPipelines:
 
     @staticmethod
     def aggregate_sales_by_year(
-        chunks: Iterator[pd.DataFrame],
-    ) -> Iterator[Dict[int, float]]:
+            chunks: Generator[pd.DataFrame],
+    ) -> Generator[Dict[int, float]]:
         """Агрегация продаж по годам"""
         sales_by_year = defaultdict(float)
 
@@ -31,7 +32,7 @@ class FirstPipelines:
 
     @staticmethod
     def plot_sales_by_year(
-        sales_data: Dict[int, float]
+            sales_data: Dict[int, float]
     ) -> None:
         """Визуализация продаж по годам"""
         years = list(sales_data.keys())
@@ -51,4 +52,3 @@ class FirstPipelines:
         worst_year = min(sales_data, key=sales_data.get)
         print(f"Лучший год для продаж: {best_year} (продажи: {sales_data[best_year]:.2f})")
         print(f"Худший год для продаж: {worst_year} (продажи: {sales_data[worst_year]:.2f})")
-
