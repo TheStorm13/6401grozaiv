@@ -1,4 +1,3 @@
-from collections import defaultdict
 from typing import Dict, Generator
 
 import matplotlib.pyplot as plt
@@ -20,35 +19,38 @@ class FirstPipelines:
     @staticmethod
     def aggregate_sales_by_year(
             chunks: Generator[pd.DataFrame],
-    ) -> Generator[Dict[int, float]]:
+    ) -> Generator[pd.Series]:
         """Агрегация продаж по годам"""
-        sales_by_year = defaultdict(float)
+        agg_series = pd.Series(dtype='float64')  # Индекс — год, значение — сумма продаж
 
         for chunk in chunks:
-            for year, sales in zip(chunk['Release.Year'], chunk['Metrics.Sales']):
-                sales_by_year[year] += sales
+            # Группируем чанк по году
+            chunk_agg = chunk.groupby('Release.Year')['Metrics.Sales'].sum()
+            # Объединяем с накопленной серией и суммируем
+            agg_series = agg_series.add(chunk_agg, fill_value=0.0)
 
-        yield dict(sales_by_year)
+        yield agg_series
 
     @staticmethod
-    def plot_sales_by_year(
-            sales_data: Dict[int, float]
-    ) -> None:
-        """Визуализация продаж по годам"""
-        years = list(sales_data.keys())
-        sales = list(sales_data.values())
+    def plot_sales_by_year(sales_series: pd.Series) -> None:
+        """Визуализация продаж по годам."""
+        # Убедимся, что индекс — это годы (int), и отсортируем по году
+        sales_series = sales_series.sort_index()
+
+        years = sales_series.index.astype(int)
+        sales = sales_series.values
 
         plt.figure(figsize=(12, 6))
-        plt.bar(years, sales)
+        plt.bar(years, sales, color='skyblue')
         plt.xlabel('Год')
         plt.ylabel('Общие продажи')
         plt.title('Продажи игр по годам')
-        plt.xticks(rotation=45)
+        plt.xticks(years, rotation=45)
         plt.tight_layout()
         plt.show()
 
         # Находим лучший и худший годы
-        best_year = max(sales_data, key=sales_data.get)
-        worst_year = min(sales_data, key=sales_data.get)
-        print(f"Лучший год для продаж: {best_year} (продажи: {sales_data[best_year]:.2f})")
-        print(f"Худший год для продаж: {worst_year} (продажи: {sales_data[worst_year]:.2f})")
+        best_year = sales_series.idxmax()
+        worst_year = sales_series.idxmin()
+        print(f"Лучший год для продаж: {best_year} (продажи: {sales_series[best_year]:.2f})")
+        print(f"Худший год для продаж: {worst_year} (продажи: {sales_series[worst_year]:.2f})")

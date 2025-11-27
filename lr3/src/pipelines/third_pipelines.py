@@ -17,54 +17,86 @@ class ThirdPipelines:
             yield filtered_chunk
 
     @staticmethod
-    def count_games_by_rating_year(chunks: Generator[pd.DataFrame]) -> Generator[Dict[int, Dict[str, int]]]:
-        """Подсчет количества игр по рейтингам и годам"""
-        rating_year_count = defaultdict(lambda: defaultdict(int))
+    def count_games_by_rating_year(
+            chunks: Generator[pd.DataFrame],
+    ) -> Generator[pd.DataFrame]:
+        """
+        Подсчёт количества игр по рейтингам и годам.
+        Возвращает генератор с одним DataFrame: ['year', 'rating', 'count'].
+        """
+        # Инициализируем Series с правильным MultiIndex и именами уровней
+        total_counts = pd.Series(
+            dtype='int64',
+            index=pd.MultiIndex.from_tuples([], names=['Release.Year', 'Release.Rating'])
+        )
 
         for chunk in chunks:
-            for year, rating in zip(chunk['Release.Year'], chunk['Release.Rating']):
-                rating_year_count[year][rating] += 1
+            sub = chunk[['Release.Year', 'Release.Rating']]
 
-        # Преобразуем в удобный для визуализации формат
-        result = {}
-        for year, ratings in rating_year_count.items():
-            result[year] = dict(ratings)
+            # Преобразуем и очищаем данные
+            sub['Release.Year'] = pd.to_numeric(sub['Release.Year'], errors='coerce')
+            sub = sub.dropna(subset=['Release.Year', 'Release.Rating'])
 
-        yield result
+            sub['Release.Year'] = sub['Release.Year'].astype('int64')
+            sub['Release.Rating'] = sub['Release.Rating'].astype('string')
+
+            # Агрегация в чанке
+            chunk_counts = sub.groupby(['Release.Year', 'Release.Rating']).size()
+
+            # Инкрементальное накопление
+            total_counts = total_counts.add(chunk_counts, fill_value=0).astype('int64')
+
+        # Формируем итоговый DataFrame
+        result_df = total_counts.reset_index()
+        result_df.columns = ['year', 'rating', 'count']
+        result_df = result_df.astype({
+            'year': 'int64',
+            'rating': 'string',
+            'count': 'int64'
+        })
+
+        yield result_df
 
     @staticmethod
-    def plot_rating_trends(rating_data: Dict[int, Dict[str, int]]) -> None:
-        """Визуализация трендов по рейтингам."""
-        # Собираем данные в удобный формат
-        years = sorted(rating_data.keys())
-        ratings = ['E', 'T', 'M']
+    def plot_rating_trends(df: pd.DataFrame) -> None:
+        """
+        Визуализация трендов по возрастным рейтингам.
+        """
+        if df.empty:
+            print("Нет данных для визуализации.")
+            return
 
-        # Создаем словарь для хранения скользящих средних
-        moving_avgs = {rating: [] for rating in ratings}
+        required = {'year', 'rating', 'count'}
+        if not required.issubset(df.columns):
+            raise ValueError(f"DataFrame должен содержать колонки: {required}")
+
+        # Сортируем по году для корректного порядка на графике
+        df = df.sort_values('year').reset_index(drop=True)
+        years_all = sorted(df['year'].unique())
 
         plt.figure(figsize=(12, 6))
 
-        for rating in ratings:
-            counts = [rating_data[year].get(rating, 0) for year in years]
+        # Группируем по рейтингу и строим отдельно для каждого
+        for rating, group in df.groupby('rating'):
+            # Приводим к полной временной шкале: если в каком-то году нет рейтинга — count = 0
+            series = group.set_index('year')['count']
+            full_series = series.reindex(years_all, fill_value=0).sort_index()
 
-            # Линейный график исходных данных
+            years = full_series.index.tolist()
+            counts = full_series.values
+
+            # Исходные данные
             plt.plot(years, counts, label=f'Rating {rating}', alpha=0.5)
 
             # Скользящее среднее (окно = 3 года)
-            window = 3
-            for i in range(len(counts)):
-                start = max(0, i - window + 1)
-                end = i + 1
-                moving_avg = sum(counts[start:end]) / (end - start)
-                moving_avgs[rating].append(moving_avg)
-
-            # Линейный график скользящего среднего
-            plt.plot(years, moving_avgs[rating], label=f'{rating} (скользящее среднее)', linewidth=2)
+            moving_avg = full_series.rolling(window=3, min_periods=1).mean()
+            plt.plot(years, moving_avg, label=f'{rating} (скользящее среднее)', linewidth=2)
 
         plt.xlabel('Год')
         plt.ylabel('Количество игр')
         plt.title('Количество выпущенных игр по возрастным рейтингам')
         plt.legend()
-        plt.xticks(rotation=45)
+        plt.xticks(years_all, rotation=45)
+        plt.grid(True, linestyle='--', alpha=0.5)
         plt.tight_layout()
         plt.show()
