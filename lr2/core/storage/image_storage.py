@@ -3,8 +3,9 @@ from pathlib import Path
 
 import numpy as np
 from PIL import Image as PILImage
-from lr1.config import IMAGE_EXTENSIONS
-from lr1.core.entity.image import Image
+
+from lr2.config import IMAGE_EXTENSIONS
+from lr2.core.entity.image_cat import ImageCat
 
 logger = logging.getLogger(__name__)
 
@@ -24,13 +25,10 @@ class ImageStorage:
 
     def _check_extension(self, path: Path) -> None:
         if path.suffix.lower() not in self.image_extensions:
+            logger.error(f"Неподдерживаемый формат изображения: {path.suffix}")
             raise ValueError(f"Неподдерживаемый формат изображения: {path.suffix}")
 
-    def _resolve_path(self, filename: str) -> Path:
-        """Вернуть полный путь к файлу относительно photo_dir"""
-        return self.photo_dir / filename
-
-    def load_image(self, image_path: Path) -> Image:
+    def load_image(self, image_path: Path) -> ImageCat:
         """
         Загрузить изображение и вернуть Image(filename, extension, data: np.ndarray).
 
@@ -54,19 +52,21 @@ class ImageStorage:
         logger.info(
             "Изображение загружено: %s (shape=%s)", image_path.name, getattr(arr, "shape", None)
         )
-        return Image(
+        return ImageCat(
             filename=image_path.stem,
             extension=image_path.suffix.lower(),
             data=arr,
+            url=None,
+            breeds=[]
         )
 
-    def save_image(self, image: Image, output: Path) -> Path:
+    def save_image(self, image: ImageCat, output: Path = None) -> Path:
         """
-        Сохранить numpy-изображение в файл в каталоге photo_dir.
+        Сохранить numpy-изображение в файл в указанном каталоге или в photo_dir по умолчанию.
 
         Args:
             image: экземпляр Image (filename, extension, data)
-            output: путь до папки сохранения
+            output: путь до папки сохранения (если не указан, используется photo_dir)
 
         Returns:
             Path: полный путь к сохранённому файлу.
@@ -74,11 +74,16 @@ class ImageStorage:
         Raises:
             ValueError: если расширение не поддерживается или данные неверного формата.
         """
-        # todo: добавить сохранение по нужному пути
-        dest = self._resolve_path(image.filename + image.extension)
-        self._check_extension(dest)
 
-        dest.parent.mkdir(parents=True, exist_ok=True)
+        save_dir = output if output else self.photo_dir
+        dest = save_dir / (image.filename + image.extension)
+
+        try:
+            self._check_extension(dest)
+        except ValueError as exc:
+            raise exc
+
+        save_dir.mkdir(parents=True, exist_ok=True)
 
         try:
             pil = PILImage.fromarray(image.data)

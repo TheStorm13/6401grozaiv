@@ -2,10 +2,10 @@ import cv2
 import numpy as np
 from scipy.ndimage import gaussian_filter, maximum_filter
 
-from lr1.core.entity.image import Image
-from lr1.core.image_operations.convolution import Convolution
-from lr1.core.image_operations.grayscale_converter import GrayscaleConverter
-from lr1.utils.performance_measurer import PerformanceMeasurer
+from lr2.core.entity.image_cat import ImageCat
+from lr2.core.image_operations.convolution import Convolution
+from lr2.core.image_operations.grayscale_converter import GrayscaleConverter
+from lr2.utils.performance_measurer import PerformanceMeasurer
 
 
 # todo: проверить правильность работы
@@ -33,7 +33,7 @@ class CornerDetection:
         self.conv_y = Convolution(CornerDetection.SOBEL_Y)
         self.nms_radius = max(1, int(nms_radius))
 
-    def corner_detection(self, image: Image) -> np.ndarray:
+    def corner_detection(self, image: ImageCat) -> np.ndarray:
         """Возвращает карту отклика углов R"""
         # Проверка, что изображение grayscale
         if image.data.ndim > 2:
@@ -42,8 +42,8 @@ class CornerDetection:
             gray = image.data.astype(float)
 
         # Градиенты
-        Ix = self.conv_x.convolution(Image("", "", gray)).data.astype(float)
-        Iy = self.conv_y.convolution(Image("", "", gray)).data.astype(float)
+        Ix = self.conv_x.convolution(ImageCat("", "", gray)).data.astype(float)
+        Iy = self.conv_y.convolution(ImageCat("", "", gray)).data.astype(float)
 
         # Сглаживаем квадраты градиентов
         Sxx = self._gaussian_blur(Ix * Ix, self.sigma)
@@ -58,7 +58,7 @@ class CornerDetection:
         return R
 
     @PerformanceMeasurer.measure_time_decorator
-    def get_corners(self, image: Image, threshold: float = 0.01) -> Image:
+    def get_corners(self, image: ImageCat, threshold: float = 0.01) -> ImageCat:
         """
         Возвращает координаты углов (row, col), прошедших порог и NMS.
         threshold — доля от максимального положительного R (0..1).
@@ -86,10 +86,12 @@ class CornerDetection:
         for y, x in corners:  # (row, col)
             cv2.circle(result, (int(x), int(y)), 2, (0, 0, 255), -1)
 
-        return Image(
+        return ImageCat(
             filename=image.filename + "_corn",
             extension=image.extension,
-            data=result
+            data=result,
+            url=image.url,
+            breeds=image.breeds
         )
 
     def _gaussian_blur(self, data: np.ndarray, sigma: float) -> np.ndarray:
@@ -97,7 +99,7 @@ class CornerDetection:
         return gaussian_filter(data, sigma=sigma)
 
     @PerformanceMeasurer.measure_time_decorator
-    def corner_detection_cv2(self, image: Image) -> Image:
+    def corner_detection_cv2(self, image: ImageCat) -> ImageCat:
 
         gray = GrayscaleConverter.to_grayscale_cv2(image).data
         gray = np.float32(gray)
@@ -106,8 +108,10 @@ class CornerDetection:
         result = image.data.copy()
         result[dst > 0.01 * dst.max()] = [255, 0, 0]
 
-        return Image(
+        return ImageCat(
             filename=image.filename + "_corn_cv2",
             extension=image.extension,
-            data=result
+            data=result,
+            url=image.url,
+            breeds=image.breeds
         )
