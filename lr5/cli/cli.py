@@ -1,20 +1,12 @@
 import asyncio
-import logging
 
 import click
 
-from lr4.config import LOG_FILE_PATH
-from lr4.core.service.cat_image_processor import CatImageProcessor
+from lr5.core.service.cat_image_processor import CatImageProcessor
+from lr5.logging_config import setup_logging, get_logger
 
-logging.basicConfig(
-    level=logging.INFO,
-    force=True,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.FileHandler(LOG_FILE_PATH, mode='w', encoding="utf-8"),
-        logging.StreamHandler()
-    ]
-)
+setup_logging()
+logger = get_logger(__name__)
 
 
 @click.group()

@@ -9,8 +9,8 @@ import numpy as np
 import requests
 from PIL import Image as PILImage
 
-from lr4.core.entity.image_cat import ImageCatFactory, ImageCat
-from lr4.utils.performance_measurer import PerformanceMeasurer
+from lr5.core.entity.image_cat import ImageCatFactory, ImageCat
+from lr5.utils.performance_measurer import PerformanceMeasurer
 
 logger = logging.getLogger(__name__)
 

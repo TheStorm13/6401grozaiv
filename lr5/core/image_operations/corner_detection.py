@@ -2,11 +2,11 @@ import cv2
 import numpy as np
 from scipy.ndimage import gaussian_filter, maximum_filter
 
-from lr4.core.entity.image_cat import ImageCat
-from lr4.core.entity.image_cat import ImageCatFactory
-from lr4.core.image_operations.convolution import Convolution
-from lr4.core.image_operations.grayscale_converter import GrayscaleConverter
-from lr4.utils.performance_measurer import PerformanceMeasurer
+from lr5.core.entity.image_cat import ImageCat
+from lr5.core.entity.image_cat import ImageCatFactory
+from lr5.core.image_operations.convolution import Convolution
+from lr5.core.image_operations.grayscale_converter import GrayscaleConverter
+from lr5.utils.performance_measurer import PerformanceMeasurer
 
 
 # todo: проверить правильность работы
