@@ -3,8 +3,8 @@ import logging
 
 import click
 
-from lr2.config import LOG_FILE_PATH
-from lr2.core.service.cat_image_processor import CatImageProcessor
+from lr4.config import LOG_FILE_PATH
+from lr4.core.service.cat_image_processor import CatImageProcessor
 
 logging.basicConfig(
     level=logging.INFO,

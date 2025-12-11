@@ -6,8 +6,8 @@ import aiofiles
 import numpy as np
 from PIL import Image as PILImage
 
-from lr2.config import IMAGE_EXTENSIONS
-from lr2.core.entity.image_cat import ImageCatFactory
+from lr4.config import IMAGE_EXTENSIONS
+from lr4.core.entity.image_cat import ImageCatFactory
 
 logger = logging.getLogger(__name__)
 

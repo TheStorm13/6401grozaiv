@@ -4,8 +4,8 @@ import os
 import cv2
 import numpy as np
 
-from lr2.core.entity.image_cat import ImageCatFactory
-from lr2.utils.performance_measurer import PerformanceMeasurer
+from lr4.core.entity.image_cat import ImageCatFactory
+from lr4.utils.performance_measurer import PerformanceMeasurer
 
 logger = logging.getLogger(__name__)
 

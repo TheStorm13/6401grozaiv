@@ -1,10 +1,10 @@
 import cv2
 import numpy as np
 
-from lr2.core.entity.image_cat import ImageCatFactory
-from lr2.core.entity.image_cat import ImageCatGray
-from lr2.core.entity.image_cat import ImageCatRGB
-from lr2.utils.performance_measurer import PerformanceMeasurer
+from lr4.core.entity.image_cat import ImageCatFactory
+from lr4.core.entity.image_cat import ImageCatGray
+from lr4.core.entity.image_cat import ImageCatRGB
+from lr4.utils.performance_measurer import PerformanceMeasurer
 
 
 class GrayscaleConverter:

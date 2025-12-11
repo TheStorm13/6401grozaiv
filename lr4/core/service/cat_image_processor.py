@@ -5,16 +5,16 @@ from pathlib import Path
 
 import numpy as np
 
-from lr2.config import API_KEY
-from lr2.config import PHOTO_DIR
-from lr2.core.api.cat_api import CatAPI
-from lr2.core.image_operations.convolution import Convolution
-from lr2.core.image_operations.corner_detection import CornerDetection
-from lr2.core.image_operations.edge_detection import EdgeDetection
-from lr2.core.image_operations.gamma_correction import GammaCorrection
-from lr2.core.image_operations.grayscale_converter import GrayscaleConverter
-from lr2.core.storage.image_storage import ImageStorage
-from lr2.utils.performance_measurer import PerformanceMeasurer
+from lr4.config import API_KEY
+from lr4.config import PHOTO_DIR
+from lr4.core.api.cat_api import CatAPI
+from lr4.core.image_operations.convolution import Convolution
+from lr4.core.image_operations.corner_detection import CornerDetection
+from lr4.core.image_operations.edge_detection import EdgeDetection
+from lr4.core.image_operations.gamma_correction import GammaCorrection
+from lr4.core.image_operations.grayscale_converter import GrayscaleConverter
+from lr4.core.storage.image_storage import ImageStorage
+from lr4.utils.performance_measurer import PerformanceMeasurer
 
 logger = logging.getLogger(__name__)
 
@@ -134,7 +134,7 @@ class CatImageProcessor:
         logger.info("Свёртка в процессах завершена")
 
         # Создание объектов и асинхронное сохранение
-        from lr2.core.entity.image_cat import ImageCatFactory
+        from lr4.core.entity.image_cat import ImageCatFactory
         save_conv_tasks = []
         for idx, convolved_data, suffix in results:
             img = images[idx - 1]
