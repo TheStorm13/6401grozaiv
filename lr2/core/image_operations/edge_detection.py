@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from lr2.core.entity.image_cat import ImageCat
+from lr2.core.entity.image_cat import ImageCatFactory
 from lr2.core.image_operations.convolution import Convolution
 from lr2.core.image_operations.grayscale_converter import GrayscaleConverter
 from lr2.utils.performance_measurer import PerformanceMeasurer
@@ -24,21 +24,18 @@ class EdgeDetection:
         self.conv_y = Convolution(EdgeDetection.SOBEL_Y)
 
     @PerformanceMeasurer.measure_time_decorator
-    def edge_detection(self, image: ImageCat) -> ImageCat:
+    def edge_detection(self, image):
         """Применяет оператор Собеля к изображению."""
 
-        data = image.data
+        gray_image = GrayscaleConverter.to_grayscale(image)
 
-        if data.ndim == 3:
-            gray_img = GrayscaleConverter.to_grayscale_cv2(image)
-            data = gray_img.data
+        data = gray_image.data
 
-        # Создаем временный Image
-        temp_im = ImageCat(filename=image.filename,
-                           extension=image.extension,
-                           data=data,
-                           url=image.url,
-                           breeds=image.breeds)
+        temp_im = ImageCatFactory.create_image_cat(filename=image.filename,
+                                                   extension=image.extension,
+                                                   data=data,
+                                                   url=image.url,
+                                                   breeds=image.breeds)
 
         gx_image = self.conv_x.convolution(temp_im)
         gy_image = self.conv_y.convolution(temp_im)
@@ -46,7 +43,7 @@ class EdgeDetection:
         gx = gx_image.data.astype(float)
         gy = gy_image.data.astype(float)
 
-        magnitude = np.hypot(gx, gy)  # float
+        magnitude = np.hypot(gx, gy)
 
         max_val = magnitude.max() if magnitude.size > 0 else 0.0
         if max_val == 0:
@@ -55,7 +52,8 @@ class EdgeDetection:
             normalized = (magnitude / max_val) * 255.0
             normalized = np.clip(normalized, 0, 255).astype(np.uint8)
 
-        return ImageCat(
+        return ImageCatFactory.create_image_cat(
+            index=image.index,
             filename=image.filename + "_edge",
             extension=image.extension,
             data=normalized,
@@ -64,14 +62,15 @@ class EdgeDetection:
         )
 
     @PerformanceMeasurer.measure_time_decorator
-    def edge_detection_cv2(self, image: ImageCat) -> ImageCat:
+    def edge_detection_cv2(self, image):
         """Применяет оператор Собеля к изображению."""
 
         gray = GrayscaleConverter.to_grayscale_cv2(image).data
         edges = cv2.Canny(gray, 100, 200)
         out = edges
 
-        return ImageCat(
+        return ImageCatFactory.create_image_cat(
+            index=image.index,
             filename=image.filename + "_edge_cv2",
             extension=image.extension,
             data=out,

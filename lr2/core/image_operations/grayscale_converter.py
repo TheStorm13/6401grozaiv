@@ -1,7 +1,9 @@
 import cv2
 import numpy as np
 
-from lr2.core.entity.image_cat import ImageCat
+from lr2.core.entity.image_cat import ImageCatFactory
+from lr2.core.entity.image_cat import ImageCatGray
+from lr2.core.entity.image_cat import ImageCatRGB
 from lr2.utils.performance_measurer import PerformanceMeasurer
 
 
@@ -12,22 +14,19 @@ class GrayscaleConverter:
 
     @PerformanceMeasurer.measure_time_decorator
     @staticmethod
-    def to_grayscale(image: ImageCat) -> ImageCat:
-        data = image.data
-
-        if data.ndim == 2:  # уже grayscale
-            gray_data = data.copy()
-
-        elif data.ndim == 3 and data.shape[2] == 3:  # RGB
-            # Преобразуем к полутоновому с использованием стандартных коэффициентов
-            gray_data = (0.299 * data[:, :, 0] +
-                         0.587 * data[:, :, 1] +
-                         0.114 * data[:, :, 2])
+    def to_grayscale(image):
+        if isinstance(image, ImageCatGray):
+            gray_data = image.data.copy()
+        elif isinstance(image, ImageCatRGB):
+            gray_data = (0.299 * image.data[:, :, 0] +
+                         0.587 * image.data[:, :, 1] +
+                         0.114 * image.data[:, :, 2])
             gray_data = np.clip(gray_data, 0, 255).astype(np.uint8)
         else:
             raise ValueError("Изображение должно быть RGB или grayscale")
 
-        return ImageCat(
+        return ImageCatFactory.create_image_cat(
+            index=image.index,
             filename=image.filename + "_gray",
             extension=image.extension,
             data=gray_data,
@@ -37,15 +36,40 @@ class GrayscaleConverter:
 
     @PerformanceMeasurer.measure_time_decorator
     @staticmethod
-    def to_grayscale_cv2(image: ImageCat) -> ImageCat:
-        data = image.data
+    def to_grayscale_cv2(image):
+        if isinstance(image, ImageCatGray):
+            gray_data = image.data.copy()
+        elif isinstance(image, ImageCatRGB):
+            gray_data = cv2.cvtColor(image.data, cv2.COLOR_RGB2GRAY)
+        else:
+            raise ValueError("Изображение должно быть RGB или grayscale")
 
-        gray_data = cv2.cvtColor(data, cv2.COLOR_RGB2GRAY)
-
-        return ImageCat(
+        return ImageCatFactory.create_image_cat(
+            index=image.index,
             filename=image.filename + "_gray_cv2",
             extension=image.extension,
             data=gray_data,
+            url=image.url,
+            breeds=image.breeds
+        )
+
+    @PerformanceMeasurer.measure_time_decorator
+    @staticmethod
+    def to_rgb(image):
+        if isinstance(image, ImageCatGray):
+            rgb_data = cv2.cvtColor(image.data.astype(np.uint8), cv2.COLOR_GRAY2BGR)
+
+        elif isinstance(image, ImageCatRGB):
+            rgb_data = image.data.copy()
+
+        else:
+            raise ValueError("Изображение должно быть RGB или grayscale")
+
+        return ImageCatFactory.create_image_cat(
+            index=image.index,
+            filename=image.filename + "_rgb",
+            extension=image.extension,
+            data=rgb_data,
             url=image.url,
             breeds=image.breeds
         )

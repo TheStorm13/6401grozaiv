@@ -1,9 +1,13 @@
+import asyncio
 import functools
+import inspect
+import logging
 import time
 from typing import Callable, Any
 
+logger = logging.getLogger(__name__)
 
-# todo: убрать typing из сигнатуры
+
 class PerformanceMeasurer:
     """Класс для измерения времени выполнения функций."""
 
@@ -20,15 +24,57 @@ class PerformanceMeasurer:
         Returns:
             tuple: (результат функции, время выполнения в секундах, имя функции)
         """
+        if inspect.iscoroutinefunction(func):
+            try:
+                loop = asyncio.get_running_loop()
+            except RuntimeError:
+                loop = None
+
+            if loop and loop.is_running():
+                # Внутри уже работающего цикла событий нельзя вызвать asyncio.run.
+                # Подсказка: используйте measure_time_async в асинхронном коде.
+                raise RuntimeError("Для асинхронных функций используйте measure_time_async внутри async-кода.")
+
+            async def _runner():
+                start_time = time.perf_counter()
+                result = await func(*args, **kwargs)
+                end_time = time.perf_counter()
+                return result, end_time - start_time
+
+            result, execution_time = asyncio.run(_runner())
+            function_name = func.__name__
+            logger.info("Функция '%s' выполнена за: %.6f секунд", function_name, execution_time)
+            return result, execution_time, function_name
+
         start_time = time.perf_counter()
         result = func(*args, **kwargs)
         end_time = time.perf_counter()
 
         execution_time = end_time - start_time
         function_name = func.__name__
+        logger.info("Функция '%s' выполнена за: %.6f секунд", function_name, execution_time)
 
-        print(f"Функция '{function_name}' выполнена за: {execution_time:.6f} секунд")
+        return result, execution_time, function_name
 
+    @staticmethod
+    async def measure_time_async(func: Callable[..., Any], *args, **kwargs) -> tuple:
+        """
+        Асинхронный вариант измерения времени. Вызывать внутри async-кода.
+
+        Returns:
+            tuple: (результат функции, время выполнения в секундах, имя функции)
+        """
+        start_time = time.perf_counter()
+        if inspect.iscoroutinefunction(func):
+            result = await func(*args, **kwargs)
+        else:
+            # Вызов синхронной функции без блокировки цикла событий.
+            result = await asyncio.to_thread(func, *args, **kwargs)
+        end_time = time.perf_counter()
+
+        execution_time = end_time - start_time
+        function_name = func.__name__
+        logger.info("Функция '%s' выполнена за: %.6f секунд", function_name, execution_time)
         return result, execution_time, function_name
 
     @staticmethod
@@ -42,6 +88,20 @@ class PerformanceMeasurer:
             # код функции
         """
 
+        if inspect.iscoroutinefunction(func):
+            @functools.wraps(func)
+            async def wrapper(*args, **kwargs):
+                start_time = time.perf_counter()
+                result = await func(*args, **kwargs)
+                end_time = time.perf_counter()
+
+                execution_time = end_time - start_time
+                logger.info("Функция '%s' выполнена за: %.6f секунд", func.__name__, execution_time)
+
+                return result
+
+            return wrapper
+
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
             start_time = time.perf_counter()
@@ -49,7 +109,7 @@ class PerformanceMeasurer:
             end_time = time.perf_counter()
 
             execution_time = end_time - start_time
-            print(f"Функция '{func.__name__}' выполнена за: {execution_time:.6f} секунд")
+            logger.info("Функция '%s' выполнена за: %.6f секунд", func.__name__, execution_time)
 
             return result
 

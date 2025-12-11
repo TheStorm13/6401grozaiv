@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-from lr2.core.entity.image_cat import ImageCat
+from lr2.core.entity.image_cat import ImageCatFactory
 from lr2.utils.performance_measurer import PerformanceMeasurer
 
 
@@ -17,14 +17,15 @@ class GammaCorrection:
         self.lut_uint8 = np.clip(lut, 0, 255).astype(np.uint8)
 
     @PerformanceMeasurer.measure_time_decorator
-    def gamma_correction(self, image: ImageCat) -> ImageCat:
+    def gamma_correction(self, image):
         """Применяет гамма-коррекцию к изображению (grayscale или RGB)."""
         data = image.data
 
         # LUT применяется по каждому каналу
         out = self.lut_uint8[data]
 
-        return ImageCat(
+        return ImageCatFactory.create_image_cat(
+            index=image.index,
             filename=image.filename + f"_gamma{self.gamma}",
             extension=image.extension,
             data=out,
@@ -33,13 +34,14 @@ class GammaCorrection:
         )
 
     @PerformanceMeasurer.measure_time_decorator
-    def gamma_correction_cv2(self, image: ImageCat) -> ImageCat:
+    def gamma_correction_cv2(self, image):
         """Применяет гамма-коррекцию к изображению (grayscale или RGB)."""
         data = image.data
 
         out = cv2.LUT(data, self.lut_uint8)
 
-        return ImageCat(
+        return ImageCatFactory.create_image_cat(
+            index=image.index,
             filename=image.filename + f"_gamma{self.gamma}_cv2",
             extension=image.extension,
             data=out,
