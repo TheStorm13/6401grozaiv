@@ -45,8 +45,8 @@ class ImageStorage:
 
         try:
             with PILImage.open(image_path) as pil_img:
-                pil_img.load()  # гарантировать чтение файла
-                arr = np.asarray(pil_img)  # HxW или HxWxC
+                pil_img.load()
+                arr = np.asarray(pil_img)
         except Exception as exc:
             logger.exception("Ошибка при загрузке изображения %s", image_path)
             raise ValueError(f"Не удалось загрузить изображение: {image_path}") from exc

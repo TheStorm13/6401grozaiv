@@ -158,6 +158,7 @@ class CatAPI:
                 try:
                     arr = self.to_numpy(data)
                     image_cat = ImageCatFactory.create_image_cat(
+                        index=idx,
                         filename=item["id"],
                         extension=item["ext"],
                         data=arr,

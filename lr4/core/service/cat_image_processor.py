@@ -8,6 +8,7 @@ import numpy as np
 from lr4.config import API_KEY
 from lr4.config import PHOTO_DIR
 from lr4.core.api.cat_api import CatAPI
+from lr4.core.entity.image_cat import ImageCatFactory
 from lr4.core.image_operations.convolution import Convolution
 from lr4.core.image_operations.corner_detection import CornerDetection
 from lr4.core.image_operations.edge_detection import EdgeDetection
@@ -134,7 +135,6 @@ class CatImageProcessor:
         logger.info("Свёртка в процессах завершена")
 
         # Создание объектов и асинхронное сохранение
-        from lr4.core.entity.image_cat import ImageCatFactory
         save_conv_tasks = []
         for idx, convolved_data, suffix in results:
             img = images[idx - 1]

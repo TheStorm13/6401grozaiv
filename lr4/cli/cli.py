@@ -42,7 +42,7 @@ def convolution(limit_images: int):
     """Применяет свёртку к изображениям"""
     cat_image_processor = CatImageProcessor()
 
-    cat_image_processor.process_images_with_convolution(limit_images)
+    # cat_image_processor.process_images_with_convolution(limit_images)
     asyncio.run(cat_image_processor.process_images_with_convolution_async(limit_images))
 
 
