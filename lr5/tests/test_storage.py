@@ -1,4 +1,3 @@
-import asyncio
 import tempfile
 import unittest
 from pathlib import Path
@@ -27,7 +26,6 @@ class TestImageStorage(unittest.TestCase):
         out = self.storage.save_image(self.image, self.tmpdir / "sync")
         self.assertTrue(out.exists())
         self.assertEqual(out.suffix, ".jpg")
-
 
     def test_load_image(self):
         """Тест загрузки изображения с диска."""

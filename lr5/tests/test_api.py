@@ -1,4 +1,3 @@
-import asyncio
 import io
 import unittest
 from unittest.mock import patch, MagicMock
@@ -38,6 +37,7 @@ class TestCatAPI(unittest.TestCase):
         self.assertEqual(len(images), 1)
         self.assertEqual(images[0].filename, "abc")
         self.assertEqual(images[0].extension, ".jpg")
+
 
 if __name__ == "__main__":
     unittest.main()
