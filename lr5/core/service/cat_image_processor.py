@@ -16,7 +16,7 @@ from lr5.core.image_operations.grayscale_converter import GrayscaleConverter
 from lr5.core.storage.image_storage import ImageStorage
 from lr5.utils.performance_measurer import PerformanceMeasurer
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("my_logger")
 
 
 class CatImageProcessor:

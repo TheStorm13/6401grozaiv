@@ -7,6 +7,7 @@ from lr5.core.entity.image_cat import ImageCatFactory, ImageCatRGB, ImageCatGray
 
 class TestImageCat(unittest.TestCase):
     def setUp(self):
+        """Подготовка тестовых изображений RGB и Gray."""
         # Простейшие данные для тестов
         self.rgb = np.array([
             [[10, 20, 30], [40, 50, 60]],
@@ -25,11 +26,13 @@ class TestImageCat(unittest.TestCase):
         )
 
     def test_factory_rgb_bw_conversion_by_shape(self):
+        """Проверка фабрики: RGB и Gray по форме массива."""
         # RGB остается RGB, а 2D массив -> Gray
         self.assertIsInstance(self.img_rgb, ImageCatRGB)
         self.assertIsInstance(self.img_gray, ImageCatGray)
 
     def test_convolution_rgb_and_gray(self):
+        """Тест применения свёртки к RGB и Gray изображениям."""
         kernel = np.array([[0, -1, 0],
                            [-1, 5, -1],
                            [0, -1, 0]], dtype=float)
@@ -41,6 +44,7 @@ class TestImageCat(unittest.TestCase):
         self.assertEqual(out_gray.shape, self.gray.shape)
 
     def test_add_images_same_type(self):
+        """Тест сложения изображений одного типа."""
         # Сложение RGB+RGB -> RGB
         res = self.img_rgb + self.img_rgb
         self.assertIsInstance(res, ImageCatRGB)
@@ -48,6 +52,7 @@ class TestImageCat(unittest.TestCase):
         self.assertIn("_plus_", res.filename)
 
     def test_add_images_mismatch_raises(self):
+        """Тест ошибки при сложении с несовместимым типом."""
         # Сложение с не-ImageCat
         with self.assertRaises(TypeError):
             _ = self.img_rgb + 123

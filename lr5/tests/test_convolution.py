@@ -8,6 +8,7 @@ from lr5.core.image_operations.convolution import Convolution
 
 class TestConvolution(unittest.TestCase):
     def setUp(self):
+        """Подготовка тестовых данных для свёртки."""
         # Градиентное изображение для стабильных проверок
         self.gray = np.arange(0, 25, dtype=np.uint8).reshape(5, 5)
         self.rgb = np.dstack([self.gray, self.gray, self.gray])
@@ -20,6 +21,7 @@ class TestConvolution(unittest.TestCase):
         self.kernel_sharpen = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]], dtype=float)
 
     def test_convolution_gray(self):
+        """Тест свёртки для чёрно-белого изображения."""
         conv = Convolution(self.kernel_sharpen)
         out = conv.convolution(self.img_gray)
         self.assertIsInstance(out, ImageCatGray)
@@ -27,6 +29,7 @@ class TestConvolution(unittest.TestCase):
         self.assertIn("_conv", out.filename)
 
     def test_convolution_rgb(self):
+        """Тест свёртки для RGB изображения."""
         conv = Convolution(self.kernel_sharpen)
         out = conv.convolution(self.img_rgb)
         self.assertIsInstance(out, ImageCatRGB)
@@ -34,6 +37,7 @@ class TestConvolution(unittest.TestCase):
         self.assertIn("_conv", out.filename)
 
     def test_convolution_cv2(self):
+        """Тест свёртки с использованием OpenCV."""
         conv = Convolution(self.kernel_sharpen)
         out = conv.convolution_cv2(self.img_rgb)
         self.assertIsInstance(out, ImageCatRGB)
@@ -41,6 +45,7 @@ class TestConvolution(unittest.TestCase):
         self.assertIn("_conv_cv2", out.filename)
 
     def test_invalid_kernel(self):
+        """Тест ошибки при некорректном ядре."""
         with self.assertRaises(ValueError):
             Convolution(np.ones((3, 3, 3)))
 

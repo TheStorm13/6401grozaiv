@@ -12,7 +12,7 @@ def setup_logging() -> None:
     - Файл: DEBUG, подробный формат (время, модуль, файл:строка).
     - Консоль: INFO, краткий формат.
     """
-    root = logging.getLogger()
+    root = logging.getLogger("my_logger")
     if root.handlers:
         return
     root.setLevel(logging.DEBUG)
@@ -23,7 +23,7 @@ def setup_logging() -> None:
     file_handler: Handler = RotatingFileHandler(
         LOG_FILE_PATH, maxBytes=1_000_000, backupCount=3, encoding="utf-8"
     )
-    file_handler.setLevel(logging.DEBUG)
+    file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(Formatter(
         "%(asctime)s [%(levelname)s] %(name)s %(filename)s:%(lineno)d - %(message)s"
     ))

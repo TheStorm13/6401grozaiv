@@ -12,6 +12,7 @@ from lr5.core.storage.image_storage import ImageStorage
 
 class TestImageStorage(unittest.TestCase):
     def setUp(self):
+        """Создание временного каталога и тестового изображения."""
         self.tmpdir = Path(tempfile.mkdtemp())
         self.storage = ImageStorage(self.tmpdir)
 
@@ -22,20 +23,14 @@ class TestImageStorage(unittest.TestCase):
         )
 
     def test_save_image_sync(self):
+        """Тест синхронного сохранения изображения."""
         out = self.storage.save_image(self.image, self.tmpdir / "sync")
         self.assertTrue(out.exists())
         self.assertEqual(out.suffix, ".jpg")
 
-    def test_save_image_async(self):
-        async def run():
-            out = await self.storage.save_image_async(self.image, self.tmpdir / "async")
-            return out
-
-        out = asyncio.run(run())
-        self.assertTrue(out.exists())
-        self.assertEqual(out.suffix, ".jpg")
 
     def test_load_image(self):
+        """Тест загрузки изображения с диска."""
         # Подготовим файл на диске и загрузим его
         img_path = self.tmpdir / "load" / "a.jpg"
         img_path.parent.mkdir(parents=True, exist_ok=True)

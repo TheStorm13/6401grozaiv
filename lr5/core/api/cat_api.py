@@ -12,7 +12,7 @@ from PIL import Image as PILImage
 from lr5.core.entity.image_cat import ImageCatFactory, ImageCat
 from lr5.utils.performance_measurer import PerformanceMeasurer
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("my_logger")
 
 
 class CatAPI:
